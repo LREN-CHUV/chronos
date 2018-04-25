@@ -1,0 +1,7 @@
+target_image:
+  build: Dockerfile
+  image: hbpmip/chronos
+  pre:
+    - echo "Building chronos image"
+  post:
+    - echo "Finished building chronos image"
