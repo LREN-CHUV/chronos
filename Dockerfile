@@ -9,23 +9,27 @@ COPY src/ /project/src/
 RUN cp /usr/share/maven/ref/settings-docker.xml /root/.m2/settings.xml \
     && mvn clean package
 
-FROM hbpmip/java-base:8u151-2
-ARG http_proxy
-ENV http_proxy ${http_proxy}
+FROM mesosphere/mesos:1.5.0
 
-RUN apt-get update \
-    && apt-get install -y gnupg \
-    && apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv E56151BF \
-    && echo "deb http://repos.mesosphere.com/debian jessie-unstable main" | tee /etc/apt/sources.list.d/mesosphere.list \
-    && echo "deb http://repos.mesosphere.com/debian jessie-testing main" | tee -a /etc/apt/sources.list.d/mesosphere.list \
-    && echo "deb http://repos.mesosphere.com/debian jessie main" | tee -a /etc/apt/sources.list.d/mesosphere.list \
-    && apt-get update \
-    && apt-get install -y systemd \
-    && apt-get install --no-install-recommends -y --allow-remove-essential mesos=1.5.0-2.0.1 \
-    && apt-get remove -y systemd \
-    && apt-get autoremove -y \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+ENV JAVA_OPTIONS="-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap"
+
+RUN \
+    # Update repositories
+    apt-get -y update && \
+    # Install neat tools
+    apt-get install -y ca-certificates-java openjdk-8-jre-headless && \
+    # jdk setup
+    /var/lib/dpkg/info/ca-certificates-java.postinst configure && \
+    apt-get remove -y openjdk-9-jre-headless && \
+    ln -svT "/usr/lib/jvm/java-8-openjdk-$(dpkg --print-architecture)" /docker-java-home && \
+    update-java-alternatives --set java-1.8.0-openjdk-$(dpkg --print-architecture) && \
+    # clean up
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+EXPOSE 8080
+
+ENV JAVA_HOME /docker-java-home
 
 COPY --from=java-build-env /project/target/chronos.jar /chronos/chronos.jar
 COPY bin/start.sh /chronos/bin/start.sh
