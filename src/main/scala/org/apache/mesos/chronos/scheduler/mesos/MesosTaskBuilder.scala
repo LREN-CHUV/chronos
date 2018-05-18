@@ -81,30 +81,24 @@ class MesosTaskBuilder @Inject()(val conf: SchedulerConfiguration) {
     if (job.executor.nonEmpty) {
       appendExecutorData(taskInfo, job, environment, uriCommand)
     } else {
-      val jobArguments = TaskUtils.getJobArgumentsForTaskId(taskId.getValue)
-      val jobWithCommand = if (jobArguments != null && !jobArguments.isEmpty) {
-        JobUtils.getJobWithArguments(job, jobArguments)
-      } else {
-        job
-      }
 
       val command = CommandInfo.newBuilder()
-      if (jobWithCommand.command.startsWith("http") || jobWithCommand.command
+      if (job.command.startsWith("http") || job.command
             .startsWith("ftp")) {
         val uri1 = CommandInfo.URI
           .newBuilder()
-          .setValue(jobWithCommand.command)
+          .setValue(job.command)
           .setExecutable(true)
           .build()
 
         command
           .addUris(uri1)
-          .setValue("\"." + jobWithCommand.command.substring(
-            jobWithCommand.command.lastIndexOf("/")) + "\"")
+          .setValue("\"." + job.command.substring(
+            job.command.lastIndexOf("/")) + "\"")
           .setEnvironment(environment)
       } else {
-        val jobHasCmd = !jobWithCommand.command.isEmpty
-        if (jobHasCmd) command.setValue(jobWithCommand.command)
+        val jobHasCmd = !job.command.isEmpty
+        if (jobHasCmd) command.setValue(job.command)
 
         command
           .setShell(job.shell)
