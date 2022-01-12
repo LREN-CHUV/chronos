@@ -28,7 +28,7 @@
     <commons-codec.version>1.10</commons-codec.version>
     <commons-email.version>1.3.3</commons-email.version>
     <commons-lang3.version>3.5</commons-lang3.version>
-    <curator-framework.version>2.11.0</curator-framework.version>
+    <curator-framework.version>4.3.0</curator-framework.version>
     <guava.version>16.0.1</guava.version>
     <jgrapht.version>1.0.0</jgrapht.version>
     <joda-convert.version>1.8</joda-convert.version>
